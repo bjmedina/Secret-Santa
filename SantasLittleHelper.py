@@ -6,8 +6,10 @@ santa an email with their letter.
 '''
 from random import *
 import smtplib
-# Import the email modules we'll need
-from email.message import EmailMessage
+
+# Super sensitive information
+gmailaddress = "itsfuknsantaclaus@gmail.com"
+gmailpassword = "quesO??1"
 
 def sendSantaLetter(santa, elf):
     ''' 
@@ -21,12 +23,12 @@ def sendSantaLetter(santa, elf):
     for line in file:
         msg = msg + line
         
-        mailServer = smtplib.SMTP('smtp.gmail.com' , 587)
-        mailServer.starttls()
-        mailServer.login(gmailaddress , gmailpassword)
-        mailServer.sendmail(gmailaddress, mailto , msg)
-        print(" \n Sent!")
-        mailServer.quit()
+    mailServer = smtplib.SMTP('smtp.gmail.com' , 587)
+    mailServer.starttls()
+    mailServer.login(gmailaddress , gmailpassword)
+    mailServer.sendmail(gmailaddress, mailto , msg)
+    print(" \n Sent!")
+    mailServer.quit()
 
 def get_contact_info(filename):
     '''File format should be:
@@ -62,8 +64,8 @@ def getEmail(santa, info):
 
 def badMatch(santa, chosen):
     '''
-    We don't want some pairs (i.e we don't want couples to get each other).
-    Let's not make those happen.
+    We dont want some pairs (i.e we dont want couples to get each other).
+    Lets not make those happen.
     '''
     
     goodToGo = True
@@ -76,8 +78,6 @@ def badMatch(santa, chosen):
         goodToGo = False
     elif( santa is "Lori" and chosen is "Nathan"):
         goodToGo = False
-    elif( santa is "Bryan" and chosen is "Minh"):
-        goodToGo = False
     elif( santa is chosen ):
         goodToGo = False
 
@@ -89,6 +89,7 @@ Fun begins here
 Getting the data set up the way we want it to be
 '''
 
+# file with everyone's name and info
 filename = "text.txt"
 
 # Get the contact info
@@ -113,38 +114,9 @@ for santa in pairs:
 for pair in pairs:
     pair[0] = getEmail(pair[0], info)
     print(pair)
-
-cont = input("Would you like to continue?\n")
-
-
-if cont is "Yes":
-
-    '''
-    Time to send the email
-    '''
-    import smtplib
-
-    gmailaddress = "itsfuknsantaclaus@gmail.com"
-    gmailpassword = "quesO??1"
     
+# Time to send the email
     
-    def sendSantaLetter(santa, elf):
-        
-        mailto = santa
-        filename = elf + ".txt"
-        
-        file = open(filename, "r")
-        msg = ""
-        for line in file:
-            msg = msg + line
-            
-            mailServer = smtplib.SMTP('smtp.gmail.com' , 587)
-            mailServer.starttls()
-            mailServer.login(gmailaddress , gmailpassword)
-            mailServer.sendmail(gmailaddress, mailto , msg)
-            print(" \n Sent!")
-            mailServer.quit()
-            
-    for pair in pairs:
-        sendSantaLetter(pair[0], pair[1])
-                
+for pair in pairs:
+    sendSantaLetter(pair[0], pair[1])
+    

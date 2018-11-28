@@ -5,6 +5,28 @@ This helps assign people to their secret santa, then sends their secret
 santa an email with their letter.
 '''
 from random import *
+import smtplib
+# Import the email modules we'll need
+from email.message import EmailMessage
+
+def sendSantaLetter(santa, elf):
+    ''' 
+    Sends santa an email
+    '''
+    mailto = santa
+    filename = elf + ".txt"
+    
+    file = open(filename, "r")
+    msg = ""
+    for line in file:
+        msg = msg + line
+        
+        mailServer = smtplib.SMTP('smtp.gmail.com' , 587)
+        mailServer.starttls()
+        mailServer.login(gmailaddress , gmailpassword)
+        mailServer.sendmail(gmailaddress, mailto , msg)
+        print(" \n Sent!")
+        mailServer.quit()
 
 def get_contact_info(filename):
     '''File format should be:
@@ -54,6 +76,8 @@ def badMatch(santa, chosen):
         goodToGo = False
     elif( santa is "Lori" and chosen is "Nathan"):
         goodToGo = False
+    elif( santa is "Bryan" and chosen is "Minh"):
+        goodToGo = False
     elif( santa is chosen ):
         goodToGo = False
 
@@ -62,23 +86,65 @@ def badMatch(santa, chosen):
 
 ''' 
 Fun begins here
+Getting the data set up the way we want it to be
 '''
 
-filename = "emails.txt"
+filename = "text.txt"
 
 # Get the contact info
 info = get_contact_info(filename)
 
 # We need to generate the pairs now
 pairs = [ [person[0], " "] for person in info ]
+shuffle(pairs)
 
 chosen = [ elf[0] for elf in info ]
 
 for santa in pairs:
+    
     r_c = randint(0, len(chosen)-1)
+    
     while( not badMatch(santa[0], chosen[r_c]) ):
         r_c = randint(0,len(chosen))
+        
     santa[1] = chosen[r_c]
     del chosen[r_c]
 
-print(pairs)
+for pair in pairs:
+    pair[0] = getEmail(pair[0], info)
+    print(pair)
+
+cont = input("Would you like to continue?\n")
+
+
+if cont is "Yes":
+
+    '''
+    Time to send the email
+    '''
+    import smtplib
+
+    gmailaddress = "itsfuknsantaclaus@gmail.com"
+    gmailpassword = "quesO??1"
+    
+    
+    def sendSantaLetter(santa, elf):
+        
+        mailto = santa
+        filename = elf + ".txt"
+        
+        file = open(filename, "r")
+        msg = ""
+        for line in file:
+            msg = msg + line
+            
+            mailServer = smtplib.SMTP('smtp.gmail.com' , 587)
+            mailServer.starttls()
+            mailServer.login(gmailaddress , gmailpassword)
+            mailServer.sendmail(gmailaddress, mailto , msg)
+            print(" \n Sent!")
+            mailServer.quit()
+            
+    for pair in pairs:
+        sendSantaLetter(pair[0], pair[1])
+                

@@ -9,8 +9,20 @@ import smtplib
 
 # Super sensitive information
 gmailaddress = "itsfuknsantaclaus@gmail.com"
-gmailpassword = "quesO??1"
+gmailpassword = "a password that is not the password to that email"
 
+SUBJECT = "You've received a letter!"
+
+def sendSantaLetters(picks, info):
+    
+    for i in range(0, len(picks)):
+        email = getEmail(picks[i], info)
+        good_person = picks[ (i+1)%(len(picks)) ]
+        
+        sendSantaLetter(email, good_person)
+        
+        print(str(i+1) + " out of " + str(len(picks)) + " sent")
+                    
 def sendSantaLetter(santa, elf):
     ''' 
     Sends santa an email
@@ -20,34 +32,44 @@ def sendSantaLetter(santa, elf):
     
     file = open(filename, "r")
     msg = ""
-    for line in file:
-        msg = msg + line
+    
+    with open(filename, mode='r') as file_of_stuff:
+        for line in file_of_stuff:
+            msg = msg + line
+
         
+    message = 'Subject: {}\n\n{}'.format(SUBJECT, msg)
+    
     mailServer = smtplib.SMTP('smtp.gmail.com' , 587)
     mailServer.starttls()
     mailServer.login(gmailaddress , gmailpassword)
-    mailServer.sendmail(gmailaddress, mailto , msg)
-    print(" \n Sent!")
+    mailServer.sendmail(gmailaddress, mailto , message)
     mailServer.quit()
 
-def get_contact_info(filename):
+def get_info(filename):
     '''File format should be:
     =========================
+    <something> <something>
+    
+    e.g.
     <Name> <email@something.something>
+    or
+    <Name> <Name>
     =========================
     
     This function reads the file, and creates a list of tuples.
-    Each tuple is ["name", "email"].
+    Each tuple is [something, something].
+    List is [ [something, something], [something, something], ... ]
     '''
     
     info = []
     
-    with open(filename, mode='r', encoding='utf-8') as contacts_file:
-        for a_contact in contacts_file:
-            info.append( [a_contact.split()[0], a_contact.split()[1]] )
+    with open(filename, mode='r') as file_of_stuff:
+        for something in file_of_stuff:
+            info.append( [something.split()[0], something.split()[1]] )
     
     return info
-
+    
 def getEmail(santa, info):
     '''
     This just finds the email of the specified person
@@ -62,27 +84,40 @@ def getEmail(santa, info):
 
     return email
 
-def badMatch(santa, chosen):
+def badMatch(santa, chosen, avoid):
     '''
     We dont want some pairs (i.e we dont want couples to get each other).
     Lets not make those happen.
     '''
-    
-    goodToGo = True
-    
-    if( santa is "Ashley" and chosen is "Dylan"):
-        goodToGo = False
-    elif( santa is "Dylan" and chosen is "Ashley"):
-        goodToGo = False
-    elif( santa is "Nathan" and chosen is "Lori"):
-        goodToGo = False
-    elif( santa is "Lori" and chosen is "Nathan"):
-        goodToGo = False
-    elif( santa is chosen ):
-        goodToGo = False
 
+    goodToGo = True
+
+    for pair in avoid:
+        if(santa == pair[0] and chosen == pair[1]):
+            goodToGo = False
+
+        if(santa == pair[1] and chosen == pair[0]):
+            goodToGo = False
+    
+    if(santa == chosen):
+        goodToGo = False
+        
     return goodToGo
 
+def check(picks, avoid):
+    '''
+    Check to see if there are any bad matches...
+    '''
+    
+    all_good = True
+
+    for i in range(0, len(picks)):
+        santa = picks[i]
+        choice = picks[ (i+1)%(len(picks)) ]
+        if( not badMatch(santa, choice, avoid) ):
+            return False
+
+    return all_good
 
 ''' 
 Fun begins here
@@ -90,33 +125,24 @@ Getting the data set up the way we want it to be
 '''
 
 # file with everyone's name and info
-filename = "text.txt"
+filename = "emails.txt"
+avoid    = "avoid.txt"
 
 # Get the contact info
-info = get_contact_info(filename)
+info = get_info(filename)
+bad_matches = get_info(avoid)
 
-# We need to generate the pairs now
-pairs = [ [person[0], " "] for person in info ]
-shuffle(pairs)
+# get names
+picks = [ person[0] for person in info ]
+shuffle(picks)
 
-chosen = [ elf[0] for elf in info ]
+# make sure this is a good choice for picks
+while( not check(picks, bad_matches) ):
+    shuffle(picks)
 
-for santa in pairs:
-    
-    r_c = randint(0, len(chosen)-1)
-    
-    while( not badMatch(santa[0], chosen[r_c]) ):
-        r_c = randint(0,len(chosen))
-        
-    santa[1] = chosen[r_c]
-    del chosen[r_c]
+# time to send letters!
+sendSantaLetters(picks, info)
 
-for pair in pairs:
-    pair[0] = getEmail(pair[0], info)
-    print(pair)
-    
-# Time to send the email
-    
-for pair in pairs:
-    sendSantaLetter(pair[0], pair[1])
-    
+
+
+
